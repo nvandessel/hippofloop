@@ -1,5 +1,5 @@
-# Data
-data/
+# Data (top-level only — not src/hippofloop/data/ or tests/data/)
+/data/
 *.jsonl
 
 # Python
