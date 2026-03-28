@@ -1,0 +1,32 @@
+# Data
+data/
+*.jsonl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Training artifacts
+*.gguf
+*.bin
+*.safetensors
+checkpoints/
+outputs/
+wandb/
+
+# Environment
+.venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Infisical
+.infisical.json
