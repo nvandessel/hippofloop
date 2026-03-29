@@ -17,7 +17,7 @@ from hippofloop.protocols import EvalResult, SFTPair, Task
 logger = logging.getLogger(__name__)
 
 # Schema definitions per task
-_SCHEMAS: dict[str, dict[str, Any]] = {
+_SCHEMAS: dict[Task, dict[str, Any]] = {
     Task.SUMMARIZE: {
         "required_fields": ["summary", "tone", "phase", "pattern", "key_moments", "open_threads"],
         "field_types": {
