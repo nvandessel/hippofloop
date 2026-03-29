@@ -1,5 +1,7 @@
 # tests/data/test_formatter.py
 
+import logging
+
 from hippofloop.data.formatter import SftFormatter
 from hippofloop.protocols import DecisionEntry, SFTPair
 
@@ -125,3 +127,38 @@ def test_split_no_overlap():
     train, val, test = formatter.split(pairs, train_ratio=0.8, val_ratio=0.1, seed=42)
     all_messages = [p.messages[0]["content"] for p in train + val + test]
     assert len(all_messages) == len(set(all_messages))
+
+
+def test_format_warns_on_multiple_system_messages(caplog):
+    """Multi-turn prompts with >1 system message should log a warning."""
+    entry = DecisionEntry(
+        stage="extract", pass_="summarize",
+        prompt=[
+            {"role": "system", "content": "First system"},
+            {"role": "system", "content": "Second system"},
+            {"role": "user", "content": "events"},
+        ],
+        response='{"summary":"test"}', parsed={"summary": "test"},
+        run_id="r", model="m", time="t",
+    )
+    formatter = SftFormatter()
+    with caplog.at_level(logging.WARNING):
+        pairs = formatter.format([entry])
+    assert len(pairs) == 1
+    assert "2 system messages" in caplog.text
+    # Last system message wins
+    assert pairs[0].messages[0]["content"] == "[SUMMARIZE] Second system"
+
+
+def test_split_small_input_produces_nonempty_splits():
+    """Split with 7 items should still produce non-empty val and test sets."""
+    formatter = SftFormatter()
+    pairs = [
+        SFTPair(messages=[], task="SUMMARIZE", source_stage="extract")
+        for _ in range(7)
+    ]
+    train, val, test = formatter.split(pairs, train_ratio=0.7, val_ratio=0.15, seed=42)
+    assert len(train) > 0
+    assert len(val) > 0
+    assert len(test) > 0
+    assert len(train) + len(val) + len(test) == 7

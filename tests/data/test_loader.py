@@ -131,3 +131,61 @@ def test_load_skips_malformed_json_lines(tmp_path):
     loader = JsonlLoader()
     entries = loader.load([path])
     assert len(entries) == 2
+
+
+def test_load_skips_entries_missing_required_fields(tmp_path):
+    """Entries missing stage, run_id, or model are skipped."""
+    path = str(tmp_path / "incomplete.jsonl")
+    with open(path, "w") as f:
+        # Missing all required fields
+        f.write('{"foo": "bar"}\n')
+        # Missing run_id and model
+        f.write('{"stage": "extract"}\n')
+        # Valid entry
+        f.write('{"run_id":"run-001","stage":"extract","pass":"summarize","model":"test","time":"T","prompt":[],"response":"{}","parsed":{}}\n')
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert len(entries) == 1
+
+
+def test_load_fallback_false_not_detected_as_fallback(tmp_path):
+    """Entry with {"fallback": false} should have fallback=False."""
+    path = str(tmp_path / "fallback.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-001", "stage": "extract", "pass": "summarize",
+            "model": "test", "time": "T", "prompt": [], "response": "{}",
+            "parsed": {}, "fallback": False,
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert len(entries) == 1
+    assert entries[0].fallback is False
+
+
+def test_load_fallback_true_detected(tmp_path):
+    """Entry with {"fallback": true} should have fallback=True."""
+    path = str(tmp_path / "fallback_true.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-001", "stage": "extract", "pass": "summarize",
+            "model": "test", "time": "T", "prompt": [], "response": "{}",
+            "parsed": {}, "fallback": True,
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert entries[0].fallback is True
+
+
+def test_load_llm_fallback_event_detected(tmp_path):
+    """Entry with event=llm_fallback should have fallback=True."""
+    path = str(tmp_path / "event_fallback.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-001", "stage": "extract", "pass": "summarize",
+            "model": "test", "time": "T", "prompt": [], "response": "{}",
+            "parsed": {}, "event": "llm_fallback",
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert entries[0].fallback is True

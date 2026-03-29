@@ -20,3 +20,13 @@ def test_supported_quantizations():
     for quant in ("Q4_K_M", "Q5_K_M", "Q8_0"):
         exporter = GgufExporter(quantization=quant)
         assert exporter.quantization == quant
+
+
+def test_exporter_default_max_seq_length():
+    exporter = GgufExporter()
+    assert exporter.max_seq_length == 8192
+
+
+def test_exporter_custom_max_seq_length():
+    exporter = GgufExporter(max_seq_length=4096)
+    assert exporter.max_seq_length == 4096
