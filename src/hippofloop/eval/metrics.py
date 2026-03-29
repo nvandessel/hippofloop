@@ -25,7 +25,7 @@ def parse_model_output(output: str) -> dict | None:
 
 
 def json_validity(output: str) -> bool:
-    """Check if output is valid JSON. Handles markdown code fences."""
+    """Check if output is a valid JSON object (dict). Handles markdown code fences."""
     return parse_model_output(output) is not None
 
 
