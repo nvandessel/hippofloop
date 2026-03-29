@@ -1,5 +1,10 @@
 # hippofloop
 
+[![Tests](https://github.com/nvandessel/hippofloop/actions/workflows/test.yml/badge.svg)](https://github.com/nvandessel/hippofloop/actions/workflows/test.yml)
+[![CodeQL](https://github.com/nvandessel/hippofloop/actions/workflows/codeql.yml/badge.svg)](https://github.com/nvandessel/hippofloop/actions/workflows/codeql.yml)
+[![License](https://img.shields.io/github/license/nvandessel/hippofloop)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+
 > [!WARNING]
 > This project is under active development and not yet ready for production use.
 
