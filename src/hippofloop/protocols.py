@@ -8,7 +8,26 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any, Protocol
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+class Task(StrEnum):
+    """Canonical task identifiers for the multi-task model.
+
+    Each maps to a consolidation stage/pass in floop's pipeline.
+    Used as prefixes in SFT system messages: [SUMMARIZE], [ARC], etc.
+    """
+
+    SUMMARIZE = "SUMMARIZE"   # extract.summarize — chunk summarization
+    ARC = "ARC"               # extract.arc — session arc synthesis
+    EXTRACT = "EXTRACT"       # extract.extract — candidate extraction
+    CLASSIFY = "CLASSIFY"     # classify — memory classification
+    RELATE = "RELATE"         # relate — relationship proposals
+
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -83,6 +102,10 @@ class DataCleaner(Protocol):
 
     def clean(self, entries: list[DecisionEntry]) -> list[DecisionEntry]: ...
 
+    def clean_with_stats(
+        self, entries: list[DecisionEntry],
+    ) -> tuple[list[DecisionEntry], dict[str, int]]: ...
+
 
 class DataFormatter(Protocol):
     """Converts decision entries into SFT training pairs and splits them."""
@@ -123,5 +146,4 @@ class Exporter(Protocol):
         self,
         model_path: str,
         output_path: str,
-        quantization: str,
     ) -> str: ...

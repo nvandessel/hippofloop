@@ -1,7 +1,14 @@
 # tests/eval/test_metrics.py
 import json
 
-from hippofloop.eval.metrics import field_accuracy, json_validity, schema_validity
+from hippofloop.eval.evaluator import _SCHEMAS
+from hippofloop.eval.metrics import (
+    field_accuracy,
+    json_validity,
+    parse_model_output,
+    schema_validity,
+)
+from hippofloop.protocols import Task
 
 # -- JSON validity --
 
@@ -22,19 +29,18 @@ def test_json_validity_with_markdown_fences():
     assert json_validity('```json\n{"summary": "test"}\n```') is True
 
 
+def test_parse_model_output_strips_fences():
+    result = parse_model_output('```json\n{"key": "val"}\n```')
+    assert result == {"key": "val"}
+
+
+def test_parse_model_output_returns_none_for_invalid():
+    assert parse_model_output("not json") is None
+
+
 # -- Schema validity --
 
-SUMMARIZE_SCHEMA = {
-    "required_fields": ["summary", "tone", "phase", "pattern", "key_moments", "open_threads"],
-    "field_types": {
-        "summary": str,
-        "tone": str,
-        "phase": str,
-        "pattern": str,
-        "key_moments": list,
-        "open_threads": list,
-    },
-}
+SUMMARIZE_SCHEMA = _SCHEMAS[Task.SUMMARIZE]
 
 def test_schema_validity_valid():
     output = json.dumps({

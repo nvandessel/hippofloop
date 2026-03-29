@@ -2,40 +2,44 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from collections.abc import Callable
 from typing import Any
 
-from hippofloop.eval.metrics import field_accuracy, json_validity, schema_validity
-from hippofloop.protocols import EvalResult, SFTPair
+from hippofloop.eval.metrics import (
+    field_accuracy,
+    json_validity,
+    parse_model_output,
+    schema_validity,
+)
+from hippofloop.protocols import EvalResult, SFTPair, Task
 
 logger = logging.getLogger(__name__)
 
 # Schema definitions per task
-_SCHEMAS: dict[str, dict[str, Any]] = {
-    "SUMMARIZE": {
+_SCHEMAS: dict[Task, dict[str, Any]] = {
+    Task.SUMMARIZE: {
         "required_fields": ["summary", "tone", "phase", "pattern", "key_moments", "open_threads"],
         "field_types": {
             "summary": str, "tone": str, "phase": str, "pattern": str,
             "key_moments": list, "open_threads": list,
         },
     },
-    "ARC": {
+    Task.ARC: {
         "required_fields": ["arc", "dominant_tone", "session_outcome", "themes"],
         "field_types": {
             "arc": str, "dominant_tone": str, "session_outcome": str, "themes": list,
         },
     },
-    "EXTRACT": {
+    Task.EXTRACT: {
         "required_fields": ["candidates"],
         "field_types": {"candidates": list},
     },
-    "CLASSIFY": {
+    Task.CLASSIFY: {
         "required_fields": ["classified"],
         "field_types": {"classified": list},
     },
-    "RELATE": {
+    Task.RELATE: {
         "required_fields": ["relationships"],
         "field_types": {"relationships": list},
     },
@@ -104,18 +108,15 @@ class ModelEvaluator:
 
         accuracies: dict[str, float] = {}
         if is_json_valid:
-            try:
-                pred_parsed = json.loads(predicted)
-                truth_parsed = json.loads(ground_truth)
-                if isinstance(pred_parsed, dict) and isinstance(truth_parsed, dict):
-                    exact = [k for k, v in truth_parsed.items() if isinstance(v, str)]
-                    numeric = [k for k, v in truth_parsed.items() if isinstance(v, (int, float))]
-                    accuracies = field_accuracy(
-                        pred_parsed, truth_parsed,
-                        exact_fields=exact, numeric_fields=numeric,
-                    )
-            except (json.JSONDecodeError, ValueError):
-                pass
+            pred_parsed = parse_model_output(predicted)
+            truth_parsed = parse_model_output(ground_truth)
+            if pred_parsed is not None and truth_parsed is not None:
+                exact = [k for k, v in truth_parsed.items() if isinstance(v, str)]
+                numeric = [k for k, v in truth_parsed.items() if isinstance(v, (int, float))]
+                accuracies = field_accuracy(
+                    pred_parsed, truth_parsed,
+                    exact_fields=exact, numeric_fields=numeric,
+                )
 
         return EvalResult(
             stage=pair.source_stage,

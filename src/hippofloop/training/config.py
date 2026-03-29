@@ -55,9 +55,6 @@ def load_config(path: str) -> TrainingConfig:
     Raises KeyError if required fields are missing.
     """
     config_path = Path(path)
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config file not found: {path}")
-
     with open(config_path) as f:
         raw = yaml.safe_load(f)
 
