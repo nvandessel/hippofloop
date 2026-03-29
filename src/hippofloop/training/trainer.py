@@ -34,7 +34,6 @@ class UnslothTrainer:
         self,
         train_data: list[SFTPair],
         val_data: list[SFTPair],
-        config_path: str,
     ) -> TrainingResult:
         """Run QLoRA fine-tuning. Requires GPU.
 
@@ -42,8 +41,8 @@ class UnslothTrainer:
         errors on machines without GPU/CUDA.
         """
         from datasets import Dataset
-        from trl import SFTTrainer
         from transformers import TrainingArguments
+        from trl import SFTTrainer
         from unsloth import FastLanguageModel
 
         logger.info("Loading base model: %s", self._config.base_model)
@@ -53,7 +52,10 @@ class UnslothTrainer:
             load_in_4bit=True,
         )
 
-        logger.info("Applying LoRA (rank=%d, alpha=%d)", self._config.lora_rank, self._config.lora_alpha)
+        logger.info(
+            "Applying LoRA (rank=%d, alpha=%d)",
+            self._config.lora_rank, self._config.lora_alpha,
+        )
         model = FastLanguageModel.get_peft_model(
             model,
             r=self._config.lora_rank,
@@ -77,6 +79,7 @@ class UnslothTrainer:
             warmup_ratio=self._config.warmup_ratio,
             weight_decay=self._config.weight_decay,
             bf16=self._config.bf16,
+            fp16=self._config.fp16,
             eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
@@ -94,14 +97,13 @@ class UnslothTrainer:
         )
 
         logger.info("Starting training (%d epochs)", self._config.epochs)
-        result = trainer.train()
+        trainer.train()
 
         # Find best checkpoint
         best_epoch = 1
         best_loss = float("inf")
         for entry in trainer.state.log_history:
-            if "eval_loss" in entry:
-                if entry["eval_loss"] < best_loss:
+            if "eval_loss" in entry and entry["eval_loss"] < best_loss:
                     best_loss = entry["eval_loss"]
                     best_epoch = int(entry.get("epoch", 1))
 

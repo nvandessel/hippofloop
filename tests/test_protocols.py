@@ -1,4 +1,4 @@
-from hippofloop.protocols import DecisionEntry, SFTPair, EvalResult, TrainingResult
+from hippofloop.protocols import DecisionEntry, EvalResult, SFTPair, TrainingResult
 
 
 def test_decision_entry_construction():

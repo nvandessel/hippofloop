@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from hippofloop.eval.metrics import field_accuracy, json_validity, schema_validity
 from hippofloop.protocols import EvalResult, SFTPair

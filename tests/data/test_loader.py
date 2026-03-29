@@ -1,6 +1,5 @@
 # tests/data/test_loader.py
 import json
-import os
 
 import pytest
 

@@ -15,7 +15,11 @@ def sample_summarize_entry() -> DecisionEntry:
             {"role": "system", "content": "You are analyzing a chunk of conversation events."},
             {"role": "user", "content": '[evt-1] user: "fix the auth bug"'},
         ],
-        response='{"summary":"User asked to fix auth bug","tone":"neutral","phase":"opening","pattern":"debugging","key_moments":[],"open_threads":["auth bug"]}',
+        response=(
+            '{"summary":"User asked to fix auth bug","tone":"neutral",'
+            '"phase":"opening","pattern":"debugging",'
+            '"key_moments":[],"open_threads":["auth bug"]}'
+        ),
         parsed={
             "summary": "User asked to fix auth bug",
             "tone": "neutral",
@@ -41,7 +45,11 @@ def sample_extract_entry() -> DecisionEntry:
             {"role": "system", "content": "You are extracting behavioral memories."},
             {"role": "user", "content": "Session arc: ... Events: ..."},
         ],
-        response='{"candidates":[{"source_events":["evt-42"],"raw_text":"dont mock the db","candidate_type":"correction","confidence":0.92}]}',
+        response=(
+            '{"candidates":[{"source_events":["evt-42"],'
+            '"raw_text":"dont mock the db",'
+            '"candidate_type":"correction","confidence":0.92}]}'
+        ),
         parsed={
             "candidates": [
                 {
@@ -118,9 +126,19 @@ def sample_sft_pair() -> SFTPair:
     """A formatted SFT training pair."""
     return SFTPair(
         messages=[
-            {"role": "system", "content": "[SUMMARIZE] You are analyzing a chunk of conversation events."},
+            {
+                "role": "system",
+                "content": "[SUMMARIZE] You are analyzing a chunk of conversation events.",
+            },
             {"role": "user", "content": '[evt-1] user: "fix the auth bug"'},
-            {"role": "assistant", "content": '{"summary":"User asked to fix auth bug","tone":"neutral","phase":"opening","pattern":"debugging","key_moments":[],"open_threads":["auth bug"]}'},
+            {
+                "role": "assistant",
+                "content": (
+                    '{"summary":"User asked to fix auth bug","tone":"neutral",'
+                    '"phase":"opening","pattern":"debugging",'
+                    '"key_moments":[],"open_threads":["auth bug"]}'
+                ),
+            },
         ],
         task="SUMMARIZE",
         source_stage="extract",

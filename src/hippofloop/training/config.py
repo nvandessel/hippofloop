@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
@@ -35,6 +35,7 @@ class TrainingConfig:
     max_seq_length: int
     weight_decay: float
     bf16: bool
+    fp16: bool
 
     # Data splits
     train_split: float
@@ -65,7 +66,7 @@ def load_config(path: str) -> TrainingConfig:
     data = raw["data"]
     export = raw["export"]
 
-    return TrainingConfig(
+    config = TrainingConfig(
         base_model=raw["base_model"],
         lora_rank=lora["rank"],
         lora_alpha=lora["alpha"],
@@ -80,6 +81,7 @@ def load_config(path: str) -> TrainingConfig:
         max_seq_length=training["max_seq_length"],
         weight_decay=training["weight_decay"],
         bf16=training["bf16"],
+        fp16=training.get("fp16", False),
         train_split=data["train_split"],
         val_split=data["val_split"],
         test_split=data["test_split"],
@@ -87,3 +89,12 @@ def load_config(path: str) -> TrainingConfig:
         quantization=export["quantization"],
         output_path=export["output_path"],
     )
+
+    split_sum = config.train_split + config.val_split + config.test_split
+    if abs(split_sum - 1.0) > 1e-6:
+        raise ValueError(
+            f"Data splits must sum to 1.0, got {split_sum:.6f} "
+            f"({config.train_split} + {config.val_split} + {config.test_split})"
+        )
+
+    return config

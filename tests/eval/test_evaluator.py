@@ -1,10 +1,9 @@
 # tests/eval/test_evaluator.py
-from unittest.mock import MagicMock
 
 import pytest
 
 from hippofloop.eval.evaluator import ModelEvaluator
-from hippofloop.protocols import SFTPair, EvalResult
+from hippofloop.protocols import EvalResult, SFTPair
 
 
 @pytest.fixture
@@ -14,7 +13,14 @@ def summarize_test_data() -> list[SFTPair]:
             messages=[
                 {"role": "system", "content": "[SUMMARIZE] You are analyzing..."},
                 {"role": "user", "content": "events"},
-                {"role": "assistant", "content": '{"summary":"User fixed auth","tone":"satisfied","phase":"resolving","pattern":"debugging","key_moments":[],"open_threads":[]}'},
+                {
+                    "role": "assistant",
+                    "content": (
+                        '{"summary":"User fixed auth","tone":"satisfied",'
+                        '"phase":"resolving","pattern":"debugging",'
+                        '"key_moments":[],"open_threads":[]}'
+                    ),
+                },
             ],
             task="SUMMARIZE",
             source_stage="extract",
@@ -26,7 +32,11 @@ def summarize_test_data() -> list[SFTPair]:
 def mock_model_fn():
     """A mock model function that returns valid JSON."""
     def model_fn(system: str, user: str) -> str:
-        return '{"summary":"User fixed auth","tone":"satisfied","phase":"resolving","pattern":"debugging","key_moments":[],"open_threads":[]}'
+        return (
+            '{"summary":"User fixed auth","tone":"satisfied",'
+            '"phase":"resolving","pattern":"debugging",'
+            '"key_moments":[],"open_threads":[]}'
+        )
     return model_fn
 
 

@@ -1,10 +1,7 @@
 # tests/eval/test_metrics.py
 import json
 
-import pytest
-
-from hippofloop.eval.metrics import json_validity, schema_validity, field_accuracy
-
+from hippofloop.eval.metrics import field_accuracy, json_validity, schema_validity
 
 # -- JSON validity --
 

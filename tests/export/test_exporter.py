@@ -1,5 +1,4 @@
 # tests/export/test_exporter.py
-from unittest.mock import MagicMock, patch
 
 import pytest
 

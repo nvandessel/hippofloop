@@ -1,5 +1,4 @@
 # tests/data/test_cleaner.py
-import pytest
 
 from hippofloop.data.cleaner import DecisionCleaner
 from hippofloop.protocols import DecisionEntry
