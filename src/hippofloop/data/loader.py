@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Sequence
+from collections.abc import Sequence
 
 from hippofloop.protocols import DecisionEntry
 
@@ -24,6 +24,8 @@ class JsonlLoader:
             entries.extend(self._load_file(path))
         return entries
 
+    _REQUIRED_FIELDS = ("stage", "run_id", "model")
+
     def _load_file(self, path: str) -> list[DecisionEntry]:
         entries: list[DecisionEntry] = []
         with open(path) as f:
@@ -35,6 +37,13 @@ class JsonlLoader:
                     raw = json.loads(line)
                 except json.JSONDecodeError:
                     logger.warning("Skipping malformed JSON at %s:%d", path, line_num)
+                    continue
+                missing = [f for f in self._REQUIRED_FIELDS if not raw.get(f)]
+                if missing:
+                    logger.warning(
+                        "Skipping entry missing required fields %s at %s:%d",
+                        missing, path, line_num,
+                    )
                     continue
                 entries.append(self._parse_entry(raw))
         return entries
@@ -51,5 +60,5 @@ class JsonlLoader:
             time=raw.get("time", raw.get("timestamp", "")),
             chunk=raw.get("chunk"),
             error=raw.get("error"),
-            fallback="fallback" in raw or raw.get("event") == "llm_fallback",
+            fallback=bool(raw.get("fallback", False)) or raw.get("event") == "llm_fallback",
         )

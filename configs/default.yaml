@@ -18,11 +18,12 @@ training:
   lr_scheduler: cosine
   warmup_ratio: 0.03
   epochs: 3
-  batch_size: 4
-  gradient_accumulation_steps: 4
-  max_seq_length: 4096
+  batch_size: 1
+  gradient_accumulation_steps: 16
+  max_seq_length: 8192
   weight_decay: 0.01
-  bf16: true
+  bf16: false
+  fp16: true
 
 data:
   train_split: 0.8

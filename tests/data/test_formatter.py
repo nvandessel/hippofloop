@@ -1,9 +1,7 @@
 # tests/data/test_formatter.py
-import pytest
 
 from hippofloop.data.formatter import SftFormatter
 from hippofloop.protocols import DecisionEntry, SFTPair
-
 
 # -- Task prefix mapping --
 
@@ -102,7 +100,10 @@ def test_split_ratios():
 def test_split_is_deterministic():
     formatter = SftFormatter()
     pairs = [
-        SFTPair(messages=[{"role": "system", "content": f"[SUMMARIZE] {i}"}], task="SUMMARIZE", source_stage="extract")
+        SFTPair(
+            messages=[{"role": "system", "content": f"[SUMMARIZE] {i}"}],
+            task="SUMMARIZE", source_stage="extract",
+        )
         for i in range(50)
     ]
     train1, val1, test1 = formatter.split(pairs, train_ratio=0.8, val_ratio=0.1, seed=42)
@@ -115,7 +116,10 @@ def test_split_is_deterministic():
 def test_split_no_overlap():
     formatter = SftFormatter()
     pairs = [
-        SFTPair(messages=[{"role": "system", "content": f"[SUMMARIZE] {i}"}], task="SUMMARIZE", source_stage="extract")
+        SFTPair(
+            messages=[{"role": "system", "content": f"[SUMMARIZE] {i}"}],
+            task="SUMMARIZE", source_stage="extract",
+        )
         for i in range(50)
     ]
     train, val, test = formatter.split(pairs, train_ratio=0.8, val_ratio=0.1, seed=42)

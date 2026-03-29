@@ -5,7 +5,7 @@
 
 Fine-tuning pipeline to distill [floop](https://github.com/nvandessel/floop)'s LLM consolidator into a small local GGUF model.
 
-floop is a spreading-activation memory system for AI coding agents. Its consolidation pipeline (Extract, Classify, Relate, Promote) currently uses a cloud LLM, which is slow and costly. hippofloop trains a small local model (3B parameters) to replace it — running entirely offline via [yzma](https://github.com/nvandessel/yzma) GGUF inference.
+floop is a spreading-activation memory system for AI coding agents. Its consolidation pipeline uses a cloud LLM, which is slow and costly. hippofloop trains a small local model (3B parameters) to replace it — running entirely offline via [yzma](https://github.com/nvandessel/yzma) GGUF inference.
 
 The name comes from the hippocampus — the brain structure that consolidates short-term to long-term memory during REM sleep.
 
@@ -32,7 +32,12 @@ decisions.jsonl → Load → Clean → Format (SFT pairs) → Train (QLoRA) → 
 ```
 
 - **Protocol-driven** — all module boundaries are Python Protocols (interfaces)
-- **Multi-task model** — single model learns all pipeline stages via task prefixes (`[SUMMARIZE]`, `[ARC]`, `[EXTRACT]`, `[CLASSIFY]`, `[RELATE]`)
+- **Multi-task model** — single model learns all consolidation stages via task prefixes:
+  - `[SUMMARIZE]` — chunk summarization (sub-pass of Extract)
+  - `[ARC]` — session arc synthesis (sub-pass of Extract)
+  - `[EXTRACT]` — candidate extraction (sub-pass of Extract)
+  - `[CLASSIFY]` — memory classification
+  - `[RELATE]` — relationship proposals
 - **QLoRA via Unsloth** — trains on consumer GPUs (8GB+ VRAM)
 - **GGUF export** — deploys as a single file, loaded in-process by yzma
 

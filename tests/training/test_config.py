@@ -26,6 +26,7 @@ def config_file(tmp_path) -> str:
             "max_seq_length": 4096,
             "weight_decay": 0.01,
             "bf16": True,
+            "fp16": False,
         },
         "data": {
             "train_split": 0.8,
@@ -64,6 +65,8 @@ def test_training_fields(config_file: str):
     assert config.epochs == 3
     assert config.batch_size == 4
     assert config.max_seq_length == 4096
+    assert config.bf16 is True
+    assert config.fp16 is False
 
 
 def test_data_fields(config_file: str):

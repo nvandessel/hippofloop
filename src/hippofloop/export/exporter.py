@@ -17,13 +17,14 @@ class GgufExporter:
     import lazily.
     """
 
-    def __init__(self, quantization: str = "Q4_K_M") -> None:
+    def __init__(self, quantization: str = "Q4_K_M", max_seq_length: int = 8192) -> None:
         if quantization not in _SUPPORTED_QUANTIZATIONS:
             raise ValueError(
                 f"Unsupported quantization: {quantization}. "
                 f"Supported: {sorted(_SUPPORTED_QUANTIZATIONS)}"
             )
         self.quantization = quantization
+        self.max_seq_length = max_seq_length
 
     def export(self, model_path: str, output_path: str) -> str:
         """Merge LoRA adapter and export to GGUF.
@@ -36,7 +37,7 @@ class GgufExporter:
         logger.info("Loading model from %s", model_path)
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=model_path,
-            max_seq_length=4096,
+            max_seq_length=self.max_seq_length,
             load_in_4bit=True,
         )
 
@@ -53,7 +54,7 @@ class GgufExporter:
         # Unsloth writes the file with a model-specific name, rename to target
         gguf_files = list(output.parent.glob("*.gguf"))
         if gguf_files:
-            actual = gguf_files[0]
+            actual = max(gguf_files, key=lambda p: p.stat().st_mtime)
             if actual != output:
                 actual.rename(output)
 

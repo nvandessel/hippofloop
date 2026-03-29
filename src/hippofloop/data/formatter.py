@@ -3,10 +3,13 @@
 
 from __future__ import annotations
 
+import logging
 import random
-from typing import Sequence
+from collections.abc import Sequence
 
 from hippofloop.protocols import DecisionEntry, SFTPair
+
+logger = logging.getLogger(__name__)
 
 # Maps (stage, pass_) to task prefix
 _TASK_MAP: dict[tuple[str, str], str] = {
@@ -48,10 +51,19 @@ class SftFormatter:
         rng.shuffle(shuffled)
 
         n = len(shuffled)
-        train_end = int(n * train_ratio)
-        val_end = train_end + int(n * val_ratio)
+        train_end = round(n * train_ratio)
+        val_end = train_end + round(n * val_ratio)
 
-        return shuffled[:train_end], shuffled[train_end:val_end], shuffled[val_end:]
+        train = shuffled[:train_end]
+        val = shuffled[train_end:val_end]
+        test = shuffled[val_end:]
+
+        if n >= 3:
+            assert train, "Train split is empty"
+            assert val, "Validation split is empty"
+            assert test, "Test split is empty"
+
+        return train, val, test
 
     def _resolve_task(self, entry: DecisionEntry) -> str | None:
         key = (entry.stage, entry.pass_)
@@ -65,11 +77,25 @@ class SftFormatter:
         # Build system message: prepend task prefix to original system content
         system_content = ""
         user_content = ""
+        system_count = 0
+        user_count = 0
         for msg in entry.prompt:
             if msg["role"] == "system":
                 system_content = msg["content"]
+                system_count += 1
             elif msg["role"] == "user":
                 user_content = msg["content"]
+                user_count += 1
+        if system_count > 1:
+            logger.warning(
+                "Entry %s/%s has %d system messages; using last",
+                entry.stage, entry.pass_, system_count,
+            )
+        if user_count > 1:
+            logger.warning(
+                "Entry %s/%s has %d user messages; using last",
+                entry.stage, entry.pass_, user_count,
+            )
 
         messages = [
             {"role": "system", "content": f"[{task}] {system_content}"},

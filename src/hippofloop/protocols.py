@@ -6,9 +6,9 @@ Concrete implementations import from here; they never import each other.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Protocol, Sequence
-
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any, Protocol
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -23,7 +23,8 @@ class DecisionEntry:
     """
 
     stage: str                              # "extract", "classify", "relate"
-    pass_: str                              # "summarize", "arc", "extract", or "" for classify/relate
+    # "summarize", "arc", "extract", or "" for classify/relate
+    pass_: str
     prompt: list[dict[str, str]]            # [{"role": "system", "content": "..."}, ...]
     response: str                           # Raw LLM output
     parsed: dict | None                     # Structured JSON the response was parsed into
@@ -104,18 +105,15 @@ class Trainer(Protocol):
         self,
         train_data: list[SFTPair],
         val_data: list[SFTPair],
-        config_path: str,
     ) -> TrainingResult: ...
 
 
 class Evaluator(Protocol):
     """Runs a model on test data and computes quality metrics."""
 
-    def evaluate(
-        self,
-        model_path: str,
-        test_data: list[SFTPair],
-    ) -> list[EvalResult]: ...
+    def evaluate(self, test_data: list[SFTPair]) -> list[EvalResult]: ...
+
+    def summary_report(self, results: list[EvalResult]) -> dict[str, Any]: ...
 
 
 class Exporter(Protocol):
