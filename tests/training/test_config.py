@@ -91,3 +91,35 @@ def test_splits_sum_to_one(config_file: str):
     config = load_config(config_file)
     total = config.train_split + config.val_split + config.test_split
     assert abs(total - 1.0) < 1e-9
+
+
+def test_load_config_invalid_splits_raises(tmp_path):
+    """Splits that don't sum to 1.0 should raise ValueError."""
+    config = {
+        "base_model": "unsloth/Qwen2.5-3B-Instruct-bnb-4bit",
+        "lora": {
+            "rank": 32, "alpha": 64, "dropout": 0.05,
+            "target_modules": ["q_proj"],
+        },
+        "training": {
+            "learning_rate": 2e-4, "lr_scheduler": "cosine",
+            "warmup_ratio": 0.03, "epochs": 3, "batch_size": 4,
+            "gradient_accumulation_steps": 4, "max_seq_length": 4096,
+            "weight_decay": 0.01, "bf16": True, "fp16": False,
+        },
+        "data": {
+            "train_split": 0.8,
+            "val_split": 0.6,
+            "test_split": 0.5,
+            "seed": 42,
+        },
+        "export": {
+            "quantization": "Q4_K_M",
+            "output_path": "/tmp/hippofloop.gguf",
+        },
+    }
+    path = str(tmp_path / "bad_splits.yaml")
+    with open(path, "w") as f:
+        yaml.dump(config, f)
+    with pytest.raises(ValueError, match="must sum to 1.0"):
+        load_config(path)
