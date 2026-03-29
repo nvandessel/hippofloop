@@ -7,27 +7,32 @@ import re
 from typing import Any
 
 
-def json_validity(output: str) -> bool:
-    """Check if output is valid JSON. Handles markdown code fences."""
+def parse_model_output(output: str) -> dict | None:
+    """Parse model output as JSON, stripping markdown fences if present.
+
+    Returns the parsed dict, or None if the output is not valid JSON.
+    This is the single entry point for parsing model responses — use it
+    instead of calling json.loads directly.
+    """
     text = _strip_markdown_fences(output)
     if not text:
-        return False
+        return None
     try:
-        json.loads(text)
-        return True
+        parsed = json.loads(text)
+        return parsed if isinstance(parsed, dict) else None
     except (json.JSONDecodeError, ValueError):
-        return False
+        return None
+
+
+def json_validity(output: str) -> bool:
+    """Check if output is valid JSON. Handles markdown code fences."""
+    return parse_model_output(output) is not None
 
 
 def schema_validity(output: str, schema: dict[str, Any]) -> bool:
     """Check if output matches expected schema (required fields + types)."""
-    text = _strip_markdown_fences(output)
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, ValueError):
-        return False
-
-    if not isinstance(parsed, dict):
+    parsed = parse_model_output(output)
+    if parsed is None:
         return False
 
     required = schema.get("required_fields", [])

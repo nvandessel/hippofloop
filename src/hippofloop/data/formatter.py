@@ -7,17 +7,17 @@ import logging
 import random
 from collections.abc import Sequence
 
-from hippofloop.protocols import DecisionEntry, SFTPair
+from hippofloop.protocols import DecisionEntry, SFTPair, Task
 
 logger = logging.getLogger(__name__)
 
 # Maps (stage, pass_) to task prefix
-_TASK_MAP: dict[tuple[str, str], str] = {
-    ("extract", "summarize"): "SUMMARIZE",
-    ("extract", "arc"): "ARC",
-    ("extract", "extract"): "EXTRACT",
-    ("classify", ""): "CLASSIFY",
-    ("relate", ""): "RELATE",
+_TASK_MAP: dict[tuple[str, str], Task] = {
+    ("extract", "summarize"): Task.SUMMARIZE,
+    ("extract", "arc"): Task.ARC,
+    ("extract", "extract"): Task.EXTRACT,
+    ("classify", ""): Task.CLASSIFY,
+    ("relate", ""): Task.RELATE,
 }
 
 
