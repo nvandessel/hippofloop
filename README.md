@@ -1,7 +1,7 @@
 # hippofloop
 
 [![Tests](https://github.com/nvandessel/hippofloop/actions/workflows/test.yml/badge.svg)](https://github.com/nvandessel/hippofloop/actions/workflows/test.yml)
-[![CodeQL](https://github.com/nvandessel/hippofloop/actions/workflows/codeql.yml/badge.svg)](https://github.com/nvandessel/hippofloop/actions/workflows/codeql.yml)
+[![CodeQL](https://github.com/nvandessel/hippofloop/actions/workflows/codeql.yml/badge.svg)](https://github.com/nvandessel/hippofloop/security/code-scanning)
 [![License](https://img.shields.io/github/license/nvandessel/hippofloop)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 
