@@ -189,3 +189,80 @@ def test_load_llm_fallback_event_detected(tmp_path):
     loader = JsonlLoader()
     entries = loader.load([path])
     assert entries[0].fallback is True
+
+
+# -- Sonnet comparison schema fallback --
+
+
+def test_load_sonnet_comparison_uses_sonnet_response(tmp_path):
+    """When 'response' is missing, fall back to 'sonnet_response'."""
+    path = str(tmp_path / "sonnet.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-sonnet-001", "stage": "extract", "pass": "arc",
+            "model": "sonnet", "time": "2026-03-28T00:00:00Z",
+            "prompt": [{"role": "system", "content": "sys"}, {"role": "user", "content": "usr"}],
+            "sonnet_response": '{"arc":"test arc"}',
+            "haiku_response": '{"arc":"haiku arc"}',
+            "haiku_parsed": {"arc": "haiku arc"},
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert len(entries) == 1
+    assert entries[0].response == '{"arc":"test arc"}'
+
+
+def test_load_sonnet_comparison_uses_haiku_parsed(tmp_path):
+    """When 'parsed' is missing, fall back to 'haiku_parsed'."""
+    path = str(tmp_path / "sonnet.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-sonnet-001", "stage": "extract", "pass": "summarize",
+            "model": "sonnet", "time": "2026-03-28T00:00:00Z",
+            "prompt": [{"role": "system", "content": "sys"}, {"role": "user", "content": "usr"}],
+            "sonnet_response": '{"summary":"test"}',
+            "haiku_parsed": {"summary": "test from haiku"},
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert entries[0].parsed == {"summary": "test from haiku"}
+
+
+def test_load_prefers_response_over_sonnet_response(tmp_path):
+    """When both 'response' and 'sonnet_response' exist, prefer 'response'."""
+    path = str(tmp_path / "both.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-001", "stage": "extract", "pass": "summarize",
+            "model": "test", "time": "T",
+            "prompt": [{"role": "system", "content": "sys"}, {"role": "user", "content": "usr"}],
+            "response": "original response",
+            "parsed": {"original": True},
+            "sonnet_response": "sonnet response",
+            "haiku_parsed": {"haiku": True},
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert entries[0].response == "original response"
+    assert entries[0].parsed == {"original": True}
+
+
+def test_load_sonnet_comparison_end_to_end(tmp_path):
+    """Sonnet comparison entries should survive the full loader pipeline."""
+    path = str(tmp_path / "sonnet.jsonl")
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "run_id": "run-sonnet-001", "stage": "extract", "pass": "summarize",
+            "model": "sonnet", "time": "2026-03-28T00:00:00Z", "chunk": 0,
+            "prompt": [{"role": "system", "content": "sys"}, {"role": "user", "content": "usr"}],
+            "sonnet_response": '{"summary":"from sonnet"}',
+            "haiku_response": '{"summary":"from haiku"}',
+            "haiku_parsed": {"summary": "from haiku"},
+        }) + "\n")
+    loader = JsonlLoader()
+    entries = loader.load([path])
+    assert len(entries) == 1
+    assert entries[0].response == '{"summary":"from sonnet"}'
+    assert entries[0].parsed == {"summary": "from haiku"}
+    assert entries[0].model == "sonnet"
+    assert entries[0].chunk == 0
