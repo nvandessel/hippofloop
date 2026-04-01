@@ -49,23 +49,18 @@ class JsonlLoader:
         return entries
 
     def _parse_entry(self, raw: dict) -> DecisionEntry:
+        resp = raw.get("response")
+        parsed = raw.get("parsed")
+        time_ = raw.get("time")
         return DecisionEntry(
             stage=raw.get("stage", ""),
             pass_=raw.get("pass", ""),
             prompt=raw.get("prompt", []),
-            response=(
-                raw.get("response")
-                if raw.get("response") is not None
-                else raw.get("sonnet_response", "")
-            ),
-            parsed=(
-                raw.get("parsed")
-                if raw.get("parsed") is not None
-                else raw.get("haiku_parsed")
-            ),
+            response=resp if resp is not None else raw.get("sonnet_response", ""),
+            parsed=parsed if parsed is not None else raw.get("haiku_parsed"),
             run_id=raw.get("run_id", ""),
             model=raw.get("model", ""),
-            time=raw.get("time", raw.get("timestamp", "")),
+            time=time_ if time_ is not None else raw.get("timestamp", ""),
             chunk=raw.get("chunk"),
             error=raw.get("error"),
             fallback=bool(raw.get("fallback", False)) or raw.get("event") == "llm_fallback",
