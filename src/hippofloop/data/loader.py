@@ -53,8 +53,16 @@ class JsonlLoader:
             stage=raw.get("stage", ""),
             pass_=raw.get("pass", ""),
             prompt=raw.get("prompt", []),
-            response=raw.get("response") if raw.get("response") is not None else raw.get("sonnet_response", ""),
-            parsed=raw.get("parsed") if raw.get("parsed") is not None else raw.get("haiku_parsed"),
+            response=(
+                raw.get("response")
+                if raw.get("response") is not None
+                else raw.get("sonnet_response", "")
+            ),
+            parsed=(
+                raw.get("parsed")
+                if raw.get("parsed") is not None
+                else raw.get("haiku_parsed")
+            ),
             run_id=raw.get("run_id", ""),
             model=raw.get("model", ""),
             time=raw.get("time", raw.get("timestamp", "")),
