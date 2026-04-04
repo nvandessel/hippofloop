@@ -88,12 +88,18 @@ class UnslothTrainer:
             seed=self._config.seed,
         )
 
+        def formatting_func(example: dict) -> str:
+            return tokenizer.apply_chat_template(
+                example["messages"], tokenize=False,
+            )
+
         trainer = SFTTrainer(
             model=model,
             tokenizer=tokenizer,
             train_dataset=train_dataset,
             eval_dataset=val_dataset,
             args=training_args,
+            formatting_func=formatting_func,
         )
 
         logger.info("Starting training (%d epochs)", self._config.epochs)
