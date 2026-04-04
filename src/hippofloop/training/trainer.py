@@ -89,9 +89,12 @@ class UnslothTrainer:
         )
 
         def formatting_func(examples: dict) -> list[str]:
+            msgs = examples["messages"]
+            if msgs and isinstance(msgs[0], dict):
+                return [tokenizer.apply_chat_template(msgs, tokenize=False)]
             return [
-                tokenizer.apply_chat_template(msgs, tokenize=False)
-                for msgs in examples["messages"]
+                tokenizer.apply_chat_template(m, tokenize=False)
+                for m in msgs
             ]
 
         trainer = SFTTrainer(
