@@ -76,7 +76,7 @@ class UnslothTrainer:
             gradient_accumulation_steps=self._config.gradient_accumulation_steps,
             learning_rate=self._config.learning_rate,
             lr_scheduler_type=self._config.lr_scheduler,
-            warmup_ratio=self._config.warmup_ratio,
+            warmup_steps=50,
             weight_decay=self._config.weight_decay,
             bf16=self._config.bf16,
             fp16=self._config.fp16,
@@ -88,12 +88,19 @@ class UnslothTrainer:
             seed=self._config.seed,
         )
 
+        def formatting_func(examples: dict) -> list[str]:
+            return [
+                tokenizer.apply_chat_template(msgs, tokenize=False)
+                for msgs in examples["messages"]
+            ]
+
         trainer = SFTTrainer(
             model=model,
             tokenizer=tokenizer,
             train_dataset=train_dataset,
             eval_dataset=val_dataset,
             args=training_args,
+            formatting_func=formatting_func,
         )
 
         logger.info("Starting training (%d epochs)", self._config.epochs)
